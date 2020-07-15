@@ -169,7 +169,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void initCamera(){
-        mCamera = Camera.open();
+        // 0 后置摄像头
+        // 1 前置摄像头
+        mCamera = Camera.open(0);
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPictureFormat(ImageFormat.JPEG);
         if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
