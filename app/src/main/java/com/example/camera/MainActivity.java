@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         final Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] bytes, Camera camera) {
-
                 FileOutputStream fos = null;
                 String filePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + "1.jpg";
                 File file = new File(filePath);
@@ -173,8 +172,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mCamera = Camera.open();
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPictureFormat(ImageFormat.JPEG);
-        if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         }
         parameters.set("orientation","portrait");
         parameters.set("rotation",90);
