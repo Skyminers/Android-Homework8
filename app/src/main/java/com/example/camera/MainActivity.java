@@ -13,6 +13,8 @@ import android.media.Image;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -24,8 +26,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Parameter;
+import java.security.Policy;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback{
 
@@ -38,9 +44,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private VideoView videoView;
     private MediaRecorder mMediaRecorder;
     private boolean isRecording;
-    private static String[] permissions = new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO};
-    private static int PERMISSION_CODE = 1;
-    private static String TAG = "CameraActivity";
+    private final static String[] permissions = new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO};
+    private final static int PERMISSION_CODE = 1;
+    private final static int SET_CLICKABLE_VIDEO = 1;
+    private final static int SET_CLICKABLE_IMAGE = 2;
+    private final static String TAG = "CameraActivity";
     private String mp4Path;
 
     private void requestForPermission(){
@@ -64,11 +72,31 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         imageView = findViewById(R.id.imageView);
         videoView = findViewById(R.id.videoView);
 
+
+        final Handler mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {// 该方法在主线程中运行
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case SET_CLICKABLE_VIDEO:
+                        takeVideo.setClickable(true);
+                        break;
+                    case SET_CLICKABLE_IMAGE:
+                        takePhoto.setClickable(true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+
+
         holder.addCallback(this);
 
         final Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] bytes, Camera camera) {
+
                 FileOutputStream fos = null;
                 String filePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath() + File.separator + "1.jpg";
                 File file = new File(filePath);
@@ -99,6 +127,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         takePhoto.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
+                takePhoto.setClickable(false);
+                new Timer("setAble").schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Message msg = mHandler.obtainMessage(SET_CLICKABLE_IMAGE);
+                        mHandler.sendMessage(msg);
+                    }}, 1000);
                 mCamera.takePicture(null,null,mPictureCallback);
             }
         });
@@ -106,7 +141,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         takeVideo.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
+                takeVideo.setClickable(false);
+                new Timer("setAble").schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Message msg = mHandler.obtainMessage(SET_CLICKABLE_VIDEO);
+                        mHandler.sendMessage(msg);
+                    }}, 1000);
                 record();
+
             }
         });
     }
@@ -130,7 +173,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mCamera = Camera.open();
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPictureFormat(ImageFormat.JPEG);
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        if(parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
         parameters.set("orientation","portrait");
         parameters.set("rotation",90);
         mCamera.setParameters(parameters);
@@ -160,8 +205,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     public void record(){
         if(isRecording){
+
             takeVideo.setText("录制");
-            mMediaRecorder.stop();
+            mMediaRecorder.setOnErrorListener(null);
+            mMediaRecorder.setOnInfoListener(null);
+            mMediaRecorder.setPreviewDisplay(null);
+            try {
+                mMediaRecorder.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mMediaRecorder.reset();
             mMediaRecorder.release();
             mMediaRecorder = null;
@@ -175,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             if(prepareVideoRecorder()){
                 takeVideo.setText("停止");
                 mMediaRecorder.start();
-            }else return;
+            }
         }
         isRecording = !isRecording;
     }
