@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.media.Image;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         holder = surfaceView.getHolder();
         imageView = findViewById(R.id.imageView);
         videoView = findViewById(R.id.videoView);
+
         holder.addCallback(this);
 
         final Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {

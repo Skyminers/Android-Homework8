@@ -13,14 +13,15 @@
     <ImageView
         android:id="@+id/imageView"
         android:visibility="invisible"
-        android:layout_width="100dp"
-        android:layout_height="160dp"
+        android:layout_width="140dp"
+        android:layout_height="200dp"
+        android:scaleType="fitStart"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <VideoView
         android:id="@+id/videoView"
-        android:layout_width="100dp"
-        android:layout_height="160dp"
+        android:layout_width="140dp"
+        android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
